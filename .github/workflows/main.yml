@@ -2,7 +2,7 @@ name: Send emails daily
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 22 * * *'  # UTC 22点 = 北京时间早上6点
+    - cron: '0 22 * * *'
 
 jobs:
   calculate-and-send:
@@ -10,11 +10,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        # 如果是从本仓库直接运行，删除下面3行
-        # 如果要用其他仓库，保持注释
-        # with:
-        #   repository: ${{ vars.REPOSITORY }}
-        #   ref: ${{ vars.REF }}
+        with:
+          repository: ${{ vars.REPOSITORY }}
+          ref: ${{ vars.REF }}
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v3
@@ -23,24 +21,21 @@ jobs:
 
       - name: Run script
         env:
-          # ✅ 以下变量在 GitHub Secrets 中配置
           ZOTERO_ID: ${{ secrets.ZOTERO_ID }}
           ZOTERO_KEY: ${{ secrets.ZOTERO_KEY }}
+          ZOTERO_IGNORE: ${{ vars.ZOTERO_IGNORE }}
+          SEND_EMPTY: ${{ vars.SEND_EMPTY }}
           ARXIV_QUERY: ${{ secrets.ARXIV_QUERY }}
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SENDER: ${{ secrets.SENDER }}
-          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
           RECEIVER: ${{ secrets.RECEIVER }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
           MAX_PAPER_NUM: ${{ secrets.MAX_PAPER_NUM }}
           USE_LLM_API: ${{ secrets.USE_LLM_API }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
           MODEL_NAME: ${{ secrets.MODEL_NAME }}
-          
-          # ✅ 以下变量在 GitHub Variables 中配置（可选）
-          ZOTERO_IGNORE: ${{ vars.ZOTERO_IGNORE }}
-          SEND_EMPTY: ${{ vars.SEND_EMPTY }}
           LANGUAGE: ${{ vars.LANGUAGE }}
         run: |
           uv run main.py
