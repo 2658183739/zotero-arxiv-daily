@@ -12,13 +12,22 @@ jobs:
           repository: ${{ vars.REPOSITORY }}
           ref: ${{ vars.REF }}
 
+      # ✅ 新增步骤：先安装 Python 3.11 (官方源，最稳)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Setup uv
         uses: astral-sh/setup-uv@v3
         with:
           version: '0.5.4'
+          enable-cache: true # 开启缓存，让下次运行更快
 
       - name: Run script
         env:
+          # 告诉 uv 优先使用我们刚才安装的系统 Python，不要自己下载
+          UV_PYTHON_PREFERENCE: system 
           ZOTERO_ID: ${{ secrets.ZOTERO_ID }}
           ZOTERO_KEY: ${{ secrets.ZOTERO_KEY }}
           ZOTERO_IGNORE: ${{ vars.ZOTERO_IGNORE }}
@@ -36,4 +45,5 @@ jobs:
           MODEL_NAME: ${{ secrets.MODEL_NAME }}
           LANGUAGE: ${{ vars.LANGUAGE }}
         run: |
+          # 这里 uv 会自动检测到上面的 Python 3.11 并使用它
           uv run main.py --debug
